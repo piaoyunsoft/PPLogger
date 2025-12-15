@@ -984,11 +984,28 @@ private:
 // 宏定义 - 保持简洁的API
 // ============================================================================
 
+// 在 Release 版本完全移除日志
+#ifdef _DEBUG
+#define PPLOG_ENABLED 1
+#else
+#define PPLOG_ENABLED 0
+#endif
+
 #define PP_LOGGER PPLogger::GetInstance()
 
-#define PPLOG_DEBUG(...) PP_LOGGER.LogDebug(__VA_ARGS__)
-#define PPLOG_INFO(...) PP_LOGGER.LogInfo(__VA_ARGS__)
-#define PPLOG_WARNING(...) PP_LOGGER.LogWarning(__VA_ARGS__)
-#define PPLOG_ERROR(...) PP_LOGGER.LogError(__VA_ARGS__)
-#define PPLOG_FATAL(...) PP_LOGGER.LogFatal(__VA_ARGS__)
-#define PPLOG_WARN PPLOG_WARNING
+#if PPLOG_ENABLED
+#define PPLOG_DEBUG(format, ...)   PP_LOGGER.Log(LogLevel::Debug, format, ##__VA_ARGS__)
+#define PPLOG_INFO(format, ...)    PP_LOGGER.Log(LogLevel::Info, format, ##__VA_ARGS__)
+#define PPLOG_WARNING(format, ...) PP_LOGGER.Log(LogLevel::Warning, format, ##__VA_ARGS__)
+#define PPLOG_WARN(format, ...)    PP_LOGGER.Log(LogLevel::Warning, format, ##__VA_ARGS__)
+#define PPLOG_ERROR(format, ...)   PP_LOGGER.Log(LogLevel::Error, format, ##__VA_ARGS__)
+#define PPLOG_FATAL(format, ...)   PP_LOGGER.Log(LogLevel::Fatal, format, ##__VA_ARGS__)
+#else
+	// Release 版本：完全移除，编译器会优化掉整个表达式
+#define PPLOG_DEBUG(format, ...)   do { (void)0; } while(0)
+#define PPLOG_INFO(format, ...)    do { (void)0; } while(0)
+#define PPLOG_WARNING(format, ...) do { (void)0; } while(0)
+#define PPLOG_WARN(format, ...)    do { (void)0; } while(0)
+#define PPLOG_ERROR(format, ...)   do { (void)0; } while(0)
+#define PPLOG_FATAL(format, ...)   do { (void)0; } while(0)
+#endif
